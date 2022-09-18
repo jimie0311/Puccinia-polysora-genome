@@ -5,11 +5,15 @@ install.packages("circlize")
 install.packages("BiocManager") 
 install.packages("readxl") 
 BiocManager::install("ComplexHeatmap") 
-#setwd("/PATH/to/circlize/") # library(circlize) library(ComplexHeatmap) library(readxl)
+#setwd("/PATH/to/circlize/") 
+library(circlize) 
+library(ComplexHeatmap) 
+library(readxl)
 
 ##genome initialization 
 cytoband.df <- read.table(file = "hapA.chr", header = F, colClasses = c("character", "numeric", "numeric"),sep = "\t") 
-circos.par(start.degree = 60) circos.genomicInitialize(cytoband.df,major.by = 60000000,axis.labels.cex = 0.4par("cex"),labels.cex = 0.6par("cex")) 
+circos.par(start.degree = 90, gap.after = c(rep(1,17),40)) 
+circos.genomicInitialize(cytoband.df,major.by = 60000000,axis.labels.cex = 0.4par("cex"),labels.cex = 0.6par("cex")) 
 chrcolor = rep(c("#E3170D")) 
 circos.genomicTrackPlotRegion(cytoband.df,ylim=c(0,0.1),track.height=0.03,bg.col=chrcolor,bg.lwd=0.4,cell.padding=c(0.01, 0.5, 0.01, 0.5),track.margin=c(0, 0))
 
