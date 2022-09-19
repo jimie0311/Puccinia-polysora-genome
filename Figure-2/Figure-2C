@@ -1,1 +1,95 @@
+### Ageing LTR insertions following https://github.com/SIWLab/Lab_Info/wiki/Ageing-LTR-insertions with few modification
 
+#########step 1 LTR_retriever installation#######
+
+conda install LTR_retriever
+
+
+#########step 2 Identification of intact LTR-RT via LTR_harvest######
+
+#Before using LTR_harvest, make sure that all scaffolds are merged to one sentence
+ls -R $scaffolds_name > readme
+#run following shell script to generate genome file with one sentence
+
+#!/bin/bash
+while read line
+do
+if [[ $line =~ ^# ]];then
+        continue
+fi
+cat ${line}.fasta gap.fasta >> temp.fasta  #gap.fasta a fasta file with 100 bp "N" to separate two scaffolds
+done<readme
+awk '/^>/{print s? s"\n"$0:$0;s="";next}{s=s sprintf("%s",$0)}END{if(s)print s}' temp.fasta > temp1.fasta
+union -sequence temp1.fasta -outseq hapA.union.fasta && rm -f temp.fasta temp1.fasta
+
+
+gt suffixerator -db hapA_union.fasta -indexname hapA -tis -suf -lcp -des -ssp -sds -dna
+gt harvest -index hapA -v -gff3 hapA_all.gff3 -out ltrharvest.out > stdout
+
+
+
+########step 3 Extract bed files for LTR_RTs########
+
+#LTRharvest doesn't use the scaffold name you give it but outputs as seqX where Xis the 0-base number of your scaffold. Please remove the first few lines started with "#" and add "###" at the first line. see an example as below.
+ls hapA_all.gff3
+
+##gff-version 3
+##sequence-region   seq0 1 67484389
+##sequence-region   seq1 1 55950575
+##sequence-region   seq2 1 55030165
+##sequence-region   seq3 1 44624142
+##sequence-region   seq4 1 50342496
+##sequence-region   seq5 1 42457113
+##sequence-region   seq6 1 55595191
+##sequence-region   seq7 1 55557465
+##sequence-region   seq8 1 54465677
+#chr01
+#chr02
+#chr03
+#chr04
+#chr05
+#chr06
+#chr07
+#chr08
+#chr09
+seq0	LTRharvest	repeat_region	4380	13346	.	?	.	ID=repeat_region1
+seq0	LTRharvest	target_site_duplication	4380	4383	.	?	.	Parent=repeat_region1
+seq0	LTRharvest	LTR_retrotransposon	4384	13342	.	?	.	ID=LTR_retrotransposon1;Parent=repeat_region1;ltr_similarity=86.67;seq_number=0
+seq0	LTRharvest	long_terminal_repeat	4384	4514	.	?	.	Parent=LTR_retrotransposon1
+seq0	LTRharvest	long_terminal_repeat	13208	13342	.	?	.	Parent=LTR_retrotransposon1
+seq0	LTRharvest	target_site_duplication	13343	13346	.	?	.	Parent=repeat_region1
+###
+seq0	LTRharvest	repeat_region	28572	31425	.	?	.	ID=repeat_region2
+seq0	LTRharvest	target_site_duplication	28572	28575	.	?	.	Parent=repeat_region2
+seq0	LTRharvest	LTR_retrotransposon	28576	31421	.	?	.	ID=LTR_retrotransposon2;Parent=repeat_region2;ltr_similarity=93.89;seq_number=0
+seq0	LTRharvest	long_terminal_repeat	28576	28886	.	?	.	Parent=LTR_retrotransposon2
+seq0	LTRharvest	long_terminal_repeat	31113	31421	.	?	.	Parent=LTR_retrotransposon2
+seq0	LTRharvest	target_site_duplication	31422	31425	.
+
+ls hapA_all.gff3.rename
+###
+chr01	LTRharvest	repeat_region	4380	13346	.	?	.	ID=repeat_region1
+chr01	LTRharvest	target_site_duplication	4380	4383	.	?	.	Parent=repeat_region1
+chr01	LTRharvest	LTR_retrotransposon	4384	13342	.	?	.	ID=LTR_retrotransposon1;Parent=repeat_region1;ltr_similarity=86.67;seq_number=0
+chr01	LTRharvest	long_terminal_repeat	4384	4514	.	?	.	Parent=LTR_retrotransposon1
+chr01	LTRharvest	long_terminal_repeat	13208	13342	.	?	.	Parent=LTR_retrotransposon1
+chr01	LTRharvest	target_site_duplication	13343	13346	.	?	.	Parent=repeat_region1
+###
+chr01	LTRharvest	repeat_region	28572	31425	.	?	.	ID=repeat_region2
+chr01	LTRharvest	target_site_duplication	28572	28575	.	?	.	Parent=repeat_region2
+chr01	LTRharvest	LTR_retrotransposon	28576	31421	.	?	.	ID=LTR_retrotransposon2;Parent=repeat_region2;ltr_similarity=93.89;seq_number=0
+chr01	LTRharvest	long_terminal_repeat	28576	28886	.	?	.	Parent=LTR_retrotransposon2
+chr01	LTRharvest	long_terminal_repeat	31113	31421	.	?	.	Parent=LTR_retrotransposon2
+chr01	LTRharvest	target_site_duplication	31422	31425	.
+
+## Extract LTR bed files via bedtools
+mkdir -p ltr && cd ltr
+cp ../hapA_all.gff3.rename ./
+ulimit -n 100000  #Lift the limit on the number of files, otherwise an error will be reported
+awk  '/###/{filename=NR".txt"}; /long_terminal_repeat/{gsub(/Parent=/,"");print $1,$4,$5,$9  >filename}' OFS="\t"  hapA_all.gff3.rename  #generate ltr bed files of each LTR-RT 
+ls | grep txt  | sort -n > file.list   #generate list of bed file
+cp file.list ../
+cd ../
+
+
+#######Extract sequences of LTR-RTs and perform allignment via muscle#######
