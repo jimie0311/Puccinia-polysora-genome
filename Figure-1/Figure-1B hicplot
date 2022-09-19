@@ -29,25 +29,25 @@ make
 
 ##################Step 2 Preparition for HiC-Pro##################
 mkdir -p 01.ref
-ln -s /PATH/TO/GD1913.contig.fasta ./01.ref
-/PATH/TO/HiC-Pro_2.11.4/bin/utils/digest_genome.py -r mboi -o GD1913.contig.fasta.MboI.txt 01.ref/GD1913.contig.fasta
+ln -s /PATH/TO/hapA_all.fasta ./01.ref
+/PATH/TO/HiC-Pro_2.11.4/bin/utils/digest_genome.py -r mboi -o hapA_all.fasta.MboI.txt 01.ref/hapA_all.fasta
 #-r define the digest enzyme
-bowtie2-build --threads 20 /PATH/TO/GD1913.contig.fasta GD1913.contig
+bowtie2-build --threads 20 /PATH/TO/hapA_all.fasta hapA_all
 mkdir -p 02.reads
 mkdir -p 02.reads/GD1913
 ln -s /PATH/TO/HiC/hic_R1.fq.gz /PATH/TO/HiC/hic_R2.fq.gz ./02.reads/GD1913
 
-samtools faidx /PATH/TO/GD1913.contig.fasta
-awk '{print $1, $2}' GD1913.contig.fasta.fai > GD1913.contig.fasta.size
+samtools faidx /PATH/TO/hapA_all.fasta
+awk '{print $1, $2}' hapA_all.fasta.fai > hapA_all.fasta.size
 
 ##################Step 3 Run HiC-Pro##################
 cp /PATH/TO/HiC-Pro/config-hicpro.txt ./
 #update following items
 
 #BOWTIE2_IDX_PATH=/PATH/TO/index_directory/
-#REFERENCE_GENOME=GD1913.contig.fasta
-#GENOME_SIZE=/PATH/TO/GD1913.contig.fasta.size
-#GENOME_FRAGMENT=/PATH/TO/GD1913.contig.fasta.MboI.txt
+#REFERENCE_GENOME=hapA_all.fasta
+#GENOME_SIZE=/PATH/TO/hapA_all.fasta.size
+#GENOME_FRAGMENT=/PATH/TO/hapA_all.fasta.MboI.txt
 #LIGATION_SITE=GATCGATC  #hindIII=AAGCTAGCTT
 
 /PATH/TO/HiC-Pro_2.11.1/bin/HiC-Pro -i /PATH/TO/02.reads/ -o hicpro_output -c /PATH/TO/config-hicpro.txt
@@ -56,3 +56,14 @@ cp /PATH/TO/HiC-Pro/config-hicpro.txt ./
 
 
 #############Step 4 HiC map visualization############
+#To show hic map for each contig. a cycle was run as follows
+#list each contig name per line in a file named "readme"
+ #!/bin/bash
+ while read line
+ do
+ if [[ $line =~ ^# ]];then
+         continue
+ fi
+ python /PATH/TO/HiCPlotter/HiCPlotter.py -f /PATH/TO/hicpro/hicpro_output/hic_results/matrix/hapA_all/iced/40000/hapA_all_40000_iced.matrix \
+ -o ${line} -r 40000 -tri 1 -bed /PATH/TO/hic_results/Matrix/hapA_all/raw/40000/hapA_all_40000_abs.bed -n ${line} -Chr ${line}
+ done<readme
