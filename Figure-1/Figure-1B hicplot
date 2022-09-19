@@ -1,0 +1,27 @@
+###This script was used to deal with Hi-C data via HiC-Pro and plot the Hi-C map using HiCPlotter
+
+######Step 1 HIC-Pro installation#########
+git clone https://github.com/nservant/HiC-Pro.git
+cd HiC-Pro
+source ~/.bashrc.conda #enter in Conda environment
+conda create -n hicpro
+source activate hicpro
+conda install python=2.7
+conda install -y samtools bowtiew2 R
+conda install -y pysam bx-python numpy scipy
+#open R
+install.packages(c('ggplot2','RColorBrewer'))
+
+#update /PATH/TO/HiC-Pro/config-install.txt
+#########################################################################
+## Paths and Settings  - Start editing here !
+#########################################################################
+PREFIX =/data/Liangjunmin/opt/biosoft/
+BOWTIE2_PATH = /data/Liangjunmin/opt/biosoft/miniconda3_for_pb-assembly/envs/hicpro/bin
+SAMTOOLS_PATH = /data/Liangjunmin/opt/biosoft/miniconda3_for_pb-assembly/envs/hicpro/bin
+R_PATH = /data/Liangjunmin/opt/biosoft/miniconda3_for_pb-assembly/envs/hicpro/bin
+PYTHON_PATH = /data/Liangjunmin/opt/biosoft/miniconda3_for_pb-assembly/envs/hicpro/bin
+CLUSTER_SYS = SGE #must be one of TORQUE,SGE,SLURM,LSF
+
+make configure
+make
