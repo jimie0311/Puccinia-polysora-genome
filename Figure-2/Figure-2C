@@ -7,24 +7,10 @@ conda install LTR_retriever
 
 #########step 2 Identification of intact LTR-RT via LTR_harvest######
 
-#Before using LTR_harvest, make sure that all scaffolds are merged to one sentence
-ls -R $scaffolds_name > readme
-#run following shell script to generate genome file with one sentence
-
-#!/bin/bash
-while read line
-do
-if [[ $line =~ ^# ]];then
-        continue
-fi
-cat ${line}.fasta gap.fasta >> temp.fasta  #gap.fasta a fasta file with 100 bp "N" to separate two scaffolds
-done<readme
-awk '/^>/{print s? s"\n"$0:$0;s="";next}{s=s sprintf("%s",$0)}END{if(s)print s}' temp.fasta > temp1.fasta
-union -sequence temp1.fasta -outseq hapA.union.fasta && rm -f temp.fasta temp1.fasta
 
 
-gt suffixerator -db hapA_union.fasta -indexname hapA -tis -suf -lcp -des -ssp -sds -dna
-gt harvest -index hapA -v -gff3 hapA_all.gff3 -out ltrharvest.out > stdout
+gt suffixerator -db hapA_all.fasta -indexname hapA_all -tis -suf -lcp -des -ssp -sds -dna
+gt harvest -index hapA_all -v -gff3 hapA_all.gff3 -out hapA_all.ltr.out > hapA_all.stdout
 
 
 
@@ -87,9 +73,90 @@ mkdir -p ltr && cd ltr
 cp ../hapA_all.gff3.rename ./
 ulimit -n 100000  #Lift the limit on the number of files, otherwise an error will be reported
 awk  '/###/{filename=NR".txt"}; /long_terminal_repeat/{gsub(/Parent=/,"");print $1,$4,$5,$9  >filename}' OFS="\t"  hapA_all.gff3.rename  #generate ltr bed files of each LTR-RT 
-ls | grep txt  | sort -n > file.list   #generate list of bed file
+ls | grep txt  | sort -n > file.list   #generate list of bed files for each LTR-RT
 cp file.list ../
 cd ../
 
 
-#######Extract sequences of LTR-RTs and perform allignment via muscle#######
+#######Step 4 Extract sequences of LTR-RTs and perform allignment via muscle#######
+
+# wirte a cycle to a shell file named extract.sh and bash extract.sh
+
+#!/bin/bash
+while read line
+do
+if [[ $line =~ ^# ]];then
+continue
+fi
+bedtools getfasta -fi ../hapA_all.fasta -bed ${line} > ${line}.fa
+muscle -in ${line}.fa -out ${line}.afa
+done<file.list
+
+#The outputs are hundreds or thousands of afa files and with 100000 afa files in each directory.
+
+
+#######Step 5 Insertion time estimation via Ape in R######### 
+
+library(ape)
+library("xlsx")
+setwd("E:/rstudio/ltr")
+
+list <- list.files()
+fas.F1 = read.FASTA(list[1])
+mat1 = dist.dna(fas.F1,as.matrix = T, model = "K80")
+merge.data = mat1[1,2]
+mutate_rate <- 2e-8  # the 2.0×10-8 mutations per nucleotide site of a closely related fungus, Schizophyllum commune （Baranova et al. 2015）
+time1 = merge.data/(2*mutate_rate)
+v1.merge = c(list[1],merge.data, time1)
+
+dir = paste("./",list,sep="")
+n = length(dir)
+for (i in 2:n)
+  {
+  fas.F.new = read.FASTA(list[i])
+  mat.new = dist.dna(fas.F.new, as.matrix = T, model = "K80")
+  time = mat.new[1,2]/(2*mutate_rate)
+  v.new = c(list[i], mat.new[1,2], time)
+  v1.merge = rbind(v1.merge, v.new)
+}
+
+write.table(v1.merge, file = "ltr_time.out")
+
+#######Step 6 LTR-RT annotation via REXdb ########
+conda install tesorter  #https://github.com/zhangrengang/TEsorter#outputs
+cat *.txt.fa > intact_ltr.fa
+tesorter intact_ltr.fa  #the output is intact_ltr.fa.rexdb.cls.tsv
+
+##match insert time (mya) from ltr_time.out and LTR-type from intact_ltr.fa.rexdb.cls.tsv via LTR name and generate ltr.txt
+grep '>' hapA_all.ltr.out > temp && awk '{print $1,$3}' | 
+
+########Step 7 Ploting of Figure 2C #######
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+ltr <- read.table(file = "ltr.txt", header = T, sep = "\t") %>% mutate(year=year/1000000)
+ltr <- ltr[,c(1,2,4)]
+colnames(ltr)[2] <- "LTRType"
+ltr_keep <- ltr[ltr[,2] != "",]
+scaleFUN <- function(x) sprintf("%.2f", x) #set digits for x axis label
+ggplot(ltr) + 
+  geom_line(ltr[ltr$LTRType != "", ], mapping = aes(x = Mya, y=..count../nrow(ltr_keep), color = LTRType), stat="bin", binwidth = 0.5) +
+  geom_line(ltr, mapping = aes(x = Mya, y=..count../nrow(ltr)),color = "black", stat="bin", binwidth = 0.5) +
+  labs(x = 'Insertion time (Mya)', y = 'Frequency') +
+  scale_color_manual(values = c( "#4ea5b9", "#f08f54", "#61733b")) +
+  theme_classic()+
+  scale_y_continuous(expand = c(0,0))+
+  scale_x_continuous(expand = c(0,0), limits=c(0,7), labels=scaleFUN)
+
+pdf(file = "LTR.pdf", width = 5, height = 5)
+last_plot()  
+dev.off()
+
+
+
+
+
+
+
+
+
