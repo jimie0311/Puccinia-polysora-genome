@@ -1,0 +1,7 @@
+## Assemblytics was used to analyze the interhaplotype variation.
+git clone https://github.com/MariaNattestad/Assemblytics.git
+chmod a+x scripts/Assemblytics*
+source ~/.bashrc.conda # activate conda environment
+conda activate mumer4
+nucmer -maxmatch -l 100 -c 500 REFERENCE.fa ASSEMBLY.fa --prefix OUT
+/PATH/TO/Assemblytics/scripts/Assemblytics <delta_file> <output_prefix> <unique_anchor_length> <min_variant_size> <max_variant_size>
