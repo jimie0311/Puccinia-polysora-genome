@@ -1,0 +1,23 @@
+###This scripts introduced the pipeline for P. polysora-GD1913 assembly from HIFI raw data to chromosome level
+
+**Step 1 Assemble HIFI raw data via Hicanu 2.1**
+samtools view hifi_raw.bam | awk '{OFS="\t"}; print ">"$1"\n"$10' > GD1913_hifi.fasta
+/PATH/TO/canu-2.1.1/build/bin/canu -p GD1913 -d ./ genomeSize=1700000000 -pacbio-hifi /PATH//GD1913_hifi.fasta #The output file is GD1913.contigs.fasta
+
+
+##################Step  2 Move contaminated reads and low coverage reads##################
+#follow the pipeline of Jana Sperschneider https://github.com/JanaSperschneider/GenomeAssemblyTools/tree/master/ContaminantScreening
+#Map long reads back to the assembly to get coverage for each contig
+/PATH/TO/minimap2/minimap2 -ax asm20 /PATH/TO/GD1913.contigs.fasta /PATH/GD1913_hifi.fasta --secondary=no -o mapping.sam
+#For further information about minimap2 see here: https://github.com/lh3/minimap2
+#Use BBMap's pileup.sh tool to calculate read coverage and GC content per contig.
+/PATH/TO/pileup.sh in=mapping.sam out=contig_coverage.txt
+#
+#move contigs with coverage lower than 2, named the new fasta file as GD1913.coverage.fasta
+#list contig names with much higher coverage (>20 in our case) in a mit_ID file, which are potential mitochondrial contigs
+#extract potential mitochondrial contigs
+python /PATH/TO/fasta-extract.py GD1913.coverage.fasta mit_ID mit_sequence.fasta
+#Identify mitochondrial contig
+blastn -query mit_sequence.fasta -db /data/Liangjunmin/database/mitochoudrion/MITO -dust yes -perc_identity 90.0 -outfmt "7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore" | gawk '($3>=98.0 && $4>=50)||($3>=94.0 && $4>=100)||($3>=90.0 && $4>=200)' > mito.screen2.txt
+cat mito.screen2.txt | grep -v "^#" >> MITO_CONTIGS2.txt
+cut -f1 MITO_CONTIGS2.txt | sort | uniq -c | sort -nr | head
