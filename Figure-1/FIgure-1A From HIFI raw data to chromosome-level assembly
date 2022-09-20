@@ -128,19 +128,10 @@ python fasta-extract.py GD1913.cleaned.fasta hapB.ID hapB.contig.fasta
   #Scaffolds rearrangement may take several rounds. 
   #After each round, each scaffold was rerun the hic-pro and plot new hic-map until the hic-map does not show any mis-break, mis-join or reverse signal.
   
-  ###########Identify telomere and centromere position##########
   The centromere is detected by viewing hic-map by showing cross-link. Each chromosome only have one centromere. Every chromosome should have two telomeres.
-  bash telomere_identification.pl
+  perl telomere_identification.pl hapA.scaffolds.fasta > hapA.telomere.out
+  perl telomere_identification.pl hapB.scaffolds.fasta > hapB.telomere.out
 
-
-
-
-
-
-
-
-
-
-
-
-
+  Finally, set all scaffolds as the reference genome and map all scaffolds to the genome via HiC-pro, then its hic map will supply connection signal between scaffold. 
+  According to centromere and telomere, connect scaffolds to chromosome level.
+ 
