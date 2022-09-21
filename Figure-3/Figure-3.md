@@ -12,7 +12,7 @@ gzip OUT.delta
 ```
 upload the .delta.gz file to Assemblytics (http://assemblytics.com)
 
-![Assemblytics Page](/Puccinia-polysora-genome/Figure-3/assemblytics.png)
+![Homepage of Assemblytics](/Puccinia-polysora-genome/Figure-3/assemblytics.png)
 
 For more information of mummer, pleas view http://mummer.sourceforge.net/manual/#usecases
 
