@@ -116,12 +116,30 @@ sudo apt-get install emboss
 Split each scaffold and wirte all contigs to individual files via seqretsplit
 git clone https://github.com/lh3/seqtk.git
 cd seqtk %% make
-seqtk seq -r in.fa > out.fa #Reverse complement FASTA file if hic map shows reverse signal
-seqtk subseq in.fa reg.be > out.fa # split contigs to two parts if hic map showes mis-join
-```  
-## merge multiple contigs to a single fasta file
-List all contig names in contig.ID. The gap.fasta includes a sequence with 100 N.
-Write following cycle program in a .sh file and bash it.  
+seqtk seq -r contig1.fa > contig1_r.fa #Reverse complement FASTA file if hic map shows reverse signal
+bedtools getfasta -fi tig00000617.fasta -bed bed.file -o tig00000617_1.fasta #split contigs to two parts based on hm.new_scaffolds if hic map showes mis-join 
+```
+
+## Rebuild multiple contigs to a single fasta file
+
+Generate a readme file in which the contigs were reordered according to hi-C map. please see an example of readme like below (16 contigs are in scaffold1):
+   tig00000617_2
+   tig00002674
+   tig00002981_r
+   tig00000617_1_r
+   tig00002822
+   tig00002255
+   tig00003203
+   tig00002121_r
+   tig00002643
+   tig00002784_r
+   tig00002744
+   tig00001397_r
+   tig00001374
+   tig00002127
+   tig00002362_r
+   tig00003315
+Write the following cycle program in a .sh file and bash it.  
 ```
 #!/bin/bash
 while read line
@@ -132,7 +150,7 @@ fi
 cat ${line}.fasta gap.fasta >> temp.fasta
 done<contig.ID
 
-c="Chr11"
+c="Chr1"
 echo ${c}
 awk '/^>/{print s? s"\n"$0:$0;s="";next}{s=s sprintf("%s",$0)}END{if(s)print s}' temp.fasta > temp1.fasta
 union -sequence temp1.fasta -outseq temp2.fasta && rm -f temp.fasta temp1.fasta  # merge multiple contigs to a single fasta file
