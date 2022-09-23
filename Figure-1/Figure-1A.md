@@ -12,11 +12,36 @@ The output file is GD1913.contigs.fasta
 We followed a workflow described by Jana Sperschneider https://github.com/JanaSperschneider/GenomeAssemblyTools/tree/master/ContaminantScreening
 The output file is GD1913.fasta
 
-## Step 3 Preliminary haplotype-phased via Haplomerger2
+## Step 3 The mtDNA assembly
+The contigs hit to mitochondrion were extracted to a separate FASTA file, In our study, 63 contigs in Table S1 (MER) were used
+```
+python ~/opt/biosoft/fasta-extract.py ../GD1913.contigs.fasta mit63_ID mit63.fasta
+/data/Liangjunmin/opt/biosoft/canu-2.1.1/build/bin/canu -p mit63 -d ./ genomeSize= 70000 -pacbio-hifi mit63.fasta #the output file is mit63.contigs.fasta
+samtools faidx mit63.contigs.fasta
+makeblastdb -in mit63.contigs.fasta -dbtype nucl -parse_seqids -out mit_out
+blastn -query mit63.contigs.fasta -db mit_out -outfmt 7 > mit_blast.out
+less mit_blast.out
+
+# BLASTN 2.2.31+
+# Query: tig00000001 len=89056 reads=38 class=contig suggestRepeat=no suggestBubble=no suggestCircular=yes trim=16340-84170
+# Database: mit_out
+# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+# 5 hits found
+tig00000001     tig00000001     100.00  89056   0       0       1       89056   1       89056   0.0     1.645e+05
+tig00000001     tig00000001     99.94   21229   0       9       67836   89056   1       21224   0.0     39118
+tig00000001     tig00000001     99.94   21229   0       9       1       21224   67836   89056   0.0     39118
+tig00000001     tig00000001     100.00  39      0       0       30222   30260   30186   30224   8e-13   73.1
+tig00000001     tig00000001     100.00  39      0       0       30186   30224   30222   30260   8e-13   73.1
+```
+1-21224 and 67836-89056 showed that the head and end are matched to a ring. Thus the mtDNA is from 1 to 67835
+```
+samtools faidx mit63.contigs.fasta tig00000001:1-67835 > GD1913.mtDNA.fasta
+```
+## Step 4 Preliminary haplotype-phased via Haplomerger2
 ```
 wget https://github.com/mapleforest/HaploMerger2
 ```
-data preparation
+  data preparation
 - genome fasta file assembled from Canu, FALCON or other de novo softwares after moving contaminants. Here is GD1913.fasta -
 - softmask repeats windowmasker -
 ```
@@ -109,7 +134,7 @@ python /PATH/SALSA/run_pipeline.py -a hapA.contig.fasta -l hapA.contigs.fasta.fa
 The output file is hapA/scaffolds/scaffolds_FINAL.fasta
 Repeat above steps to obtain hapB/scaffolds/scaffolds_FINAL.fasta
   
-## Scaffolds rearrangement
+## Step 7 Scaffolds rearrangement
 Follow Figure-2B, and plot hic-map for each scaffold. Adjust scaffold according to hic map by using emboss
 ```
 sudo apt-get install emboss
@@ -120,7 +145,7 @@ seqtk seq -r contig1.fa > contig1_r.fa #Reverse complement FASTA file if hic map
 bedtools getfasta -fi tig00000617.fasta -bed bed.file -o tig00000617_1.fasta #split contigs to two parts based on hm.new_scaffolds if hic map showes mis-join 
 ```
 
-## Rebuild multiple contigs to a single fasta file
+## Step 8 Rebuild multiple contigs to a single fasta file
 
 Generate a readme file in which the contigs were reordered according to hi-C map. please see an example of readme like below (16 contigs are in scaffold1):
    tig00000617_2
