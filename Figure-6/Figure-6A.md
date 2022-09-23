@@ -1,7 +1,7 @@
 # Figure 6A Synteny Plot
-We used MCScan (Python version) to plot the synteny for two haplotypes of P. polysora and haplotype A of three Puccinia species (pca203, pgt21-0 and Ptt76)
-## Step 1 Jcvi installtion
+We used MCScan (Python version) to plot the synteny for two haplotypes of P. polysora and haplotype A of three Puccinia species (pca203, pgt21-0 and Ptt76). For more information of MCscan (python version), pleas view https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
 
+## Step 1 Jcvi installtion
 ```
 conda create -y -c bioconda -n jcvi jcvi
 conda activate jcvi
@@ -48,6 +48,7 @@ python -m jcvi.compara.synteny screen --minspan=30 --simple ppzA.ppzB.anchors pt
 python -m jcvi.compara.synteny screen --minspan=30 --simple ppzA.ppzB.anchors pca203.pgt210.anchors.simple
 ```
 - layout file, save following parameters to a layout.file
+```
 #y, xstart, xend, rotation, color, label, va,  bed
 .7,     .1,    .8,       0,      , ppzB, top, grape.bed
 .5.5,   .1,    .8,       0,      , ppzA, top, peach.bed
@@ -59,5 +60,4 @@ e, 0, 1, ppzB.ppzA.anchors.simple
 e, 1, 2, ppzA.pt76.anchors.simple
 e, 2, 3, pt76.pca203.anchors.simple
 e, 3, 4, pca203.pgt210.anchors.simple
-
-For more information of MCscan (python version), pleas view https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
+```
