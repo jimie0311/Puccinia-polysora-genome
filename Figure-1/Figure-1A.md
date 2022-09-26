@@ -138,9 +138,9 @@ Repeat above steps to obtain hapB/scaffolds/scaffolds_FINAL.fasta
 Follow Figure-2B, and plot hic-map for each scaffold. Adjust scaffold according to hic map by using emboss
 ```
 sudo apt-get install emboss
-Split each scaffold and wirte all contigs to individual files via seqretsplit
+#Split each scaffold and wirte all contigs to individual files via seqretsplit
 git clone https://github.com/lh3/seqtk.git
-cd seqtk %% make
+cd seqtk && make
 seqtk seq -r contig1.fa > contig1_r.fa #Reverse complement FASTA file if hic map shows reverse signal
 bedtools getfasta -fi tig00000617.fasta -bed bed.file -o tig00000617_1.fasta #split contigs to two parts based on hm.new_scaffolds if hic map showes mis-join 
 ```
@@ -148,6 +148,7 @@ bedtools getfasta -fi tig00000617.fasta -bed bed.file -o tig00000617_1.fasta #sp
 ## Step 8 Rebuild multiple contigs to a single fasta file
 
 Generate a readme file in which the contigs were reordered according to hi-C map. please see an example of readme like below (16 contigs are in scaffold1):
+```
    tig00000617_2
    tig00002674
    tig00002981_r
@@ -164,7 +165,8 @@ Generate a readme file in which the contigs were reordered according to hi-C map
    tig00002127
    tig00002362_r
    tig00003315
-Write the following cycle program in a .sh file and bash it.  
+```
+Write the following cycle program in a .sh file and bash it.
 ```
 #!/bin/bash
 while read line
