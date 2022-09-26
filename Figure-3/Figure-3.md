@@ -17,11 +17,12 @@ upload the .delta.gz file to Assemblytics (http://assemblytics.com)
 For more information of mummer, pleas view http://mummer.sourceforge.net/manual/#usecases
 
 # Figure-3B
+```
 mummer --maxmatch -t 100 -b 200 -c 200 -p hapAB hapA.fasta hapB.fasta
 delta-filter -i 95 -l 1000 -1 hapAB.delta > hapAB.filter
 show-coords -c -d -l -I 95 -L 10000 -r hapAB.filter > hapAB.coord
 mumerplot --png -p hapAB.1000 hapAB.filter
-
+```
 # Figure-3C and 3D
 Compare chromosomes between two haplotypes, a cycle as follows was run.
 List all chromosome name in a readme file
