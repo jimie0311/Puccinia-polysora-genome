@@ -1,4 +1,4 @@
-# Scripts for plotting PCA and rD
+# Scripts for plotting PCA
 
 We used plink to perform PCA analysis. Before analyzing, gatk v4.1.9 was applied to obtain vcf file of 77 P. polysora isolates. The rD was calculated by R package _poppr_
 
