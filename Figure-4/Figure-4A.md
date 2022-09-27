@@ -1,5 +1,6 @@
 # The workflow to perform clusting analysis of gene expression of secretome 
-## Step 1
+## Step 1 Generate count matrix of expression data
+
 
 ## Step 2 Plot clustering in R
 ```
@@ -18,8 +19,8 @@ count_trans_hapA <- data.frame(read.delim2("Data/GD1913_hapA_count_matrix_transc
 count_trans_hapB <- data.frame(read.delim2("Data/GD1913_hapB_count_matrix_transcripts", header = T, sep = ",", row.names = 1))
 count_trans_hapA <- count_trans_hapA[,c(19:21, 1:18)] #move GS lane to first column
 count_trans_hapB <- count_trans_hapB[,c(19:21, 1:18)] #move GS lane to first column
-colnames(count_trans_hapA) <- c("GS1","GS2","GS3","dpi01-1","dpi01-2","dpi01-3","dpi02-1","dpi02-2","dpi02-3","dpi04-1","dpi04-2","dpi04-3","dpi07-1","dpi07-2","dpi07-3","dpi10-1","dpi10-2","dpi10-3","dpi13-1","dpi13-2","dpi13-3")
-colnames(count_trans_hapB) <- c("GS1","GS2","GS3","dpi01-1","dpi01-2","dpi01-3","dpi02-1","dpi02-2","dpi02-3","dpi04-1","dpi04-2","dpi04-3","dpi07-1","dpi07-2","dpi07-3","dpi10-1","dpi10-2","dpi10-3","dpi13-1","dpi13-2","dpi13-3")
+colnames(count_trans_hapA) <- c("GS1","GS2","GS3","dpi01-1","dpi01-2","dpi01-3","dpi02-1","dpi02-2","dpi02-3","dpi04-1","dpi04-2","dpi04-3","dpi07-1","dpi07-2","dpi07-3","dpi10-1","dpi10-2","dpi10-3","dpi14-1","dpi14-2","dpi14-3")
+colnames(count_trans_hapB) <- c("GS1","GS2","GS3","dpi01-1","dpi01-2","dpi01-3","dpi02-1","dpi02-2","dpi02-3","dpi04-1","dpi04-2","dpi04-3","dpi07-1","dpi07-2","dpi07-3","dpi10-1","dpi10-2","dpi10-3","dpi14-1","dpi14-2","dpi14-3")
 #load names of secreted proteins
 secreted_hapA <- read.table("Data/secreted_hapA.txt")
 secreted_hapB <- read.table("Data/secreted_hapB.txt")
