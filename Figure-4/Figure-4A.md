@@ -1,11 +1,11 @@
 # The workflow to perform clustering analysis of gene expression of secretome 
 ## Step 1 Generate count matrix of expression data
-- index genome
+- Index genome
 ```
 hisat2-build -f -p 20 ./genome/GD1913_hapA.fasta genome/GD1913_hapA_index
 hisat2-build -f -p 20 ./genome/GD1913_hapB.fasta genome/GD1913_hapB_index
 ```
-- genome mapping
+- Genome mapping
 
 write the names of RNA-seq data for each time-point in sample_name.txt, run a cycle as follows
 
