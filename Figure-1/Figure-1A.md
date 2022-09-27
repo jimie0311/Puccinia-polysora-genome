@@ -41,17 +41,18 @@ samtools faidx mit63.contigs.fasta tig00000001:1-67835 > GD1913.mtDNA.fasta
 ```
 wget https://github.com/mapleforest/HaploMerger2
 ```
-  data preparation
-- genome fasta file assembled from Canu, FALCON or other de novo softwares after moving contaminants. Here is GD1913.fasta -
-- softmask repeats windowmasker -
+data preparation
+-genome fasta file assembled from Canu, FALCON or other de novo softwares after moving contaminants. Here is GD1913.fasta 
+-softmask repeats windowmasker
 ```
 windowmasker -checkdup true -mk_counts -in GD1913.clean.fasta -infmt fasta -out GD1913.count -sformat obinary
 ```
-- clean genome by moving illegal charactoer and compress genome -
+-clean genome by moving illegal charactoer and compress genome 
 ```
 gunzip -c GD1913.fasta.masked.gz | /PATH/TO/HaploMerger2_20180603/bin/fanaPolishing.pl --legalizing --maskShortPortion=1 --noleand:qingN --removeShortSeq=1 > GD1913.cleaned.fasta
 ```
-- update path -
+-update path
+
 All PATH in project_tempate are not the full PATH but ../bin， update as follows, pay attentation to make a copy before updating.
 ```
 cp -r project_template project_template_bck
