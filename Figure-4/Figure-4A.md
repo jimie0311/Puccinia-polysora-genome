@@ -1,6 +1,47 @@
-# The workflow to perform clusting analysis of gene expression of secretome 
+# The workflow to perform clustering analysis of gene expression of secretome 
 ## Step 1 Generate count matrix of expression data
+- index genome
+```
+hisat2-build -f -p 20 ./genome/GD1913_hapA.fasta genome/GD1913_hapA_index
+hisat2-build -f -p 20 ./genome/GD1913_hapB.fasta genome/GD1913_hapB_index
+```
+- genome mapping
 
+write the names of RNA-seq data for each time-point in sample_name.txt, run a cycle as follows
+
+```
+while read line
+do
+#hapA
+hisat2 -p 20 -x ./genome/GD1913_hapA_index -1 data/${line}_R1.fq.gz -2 data/${line}_R2.fq.gz -S bam_files_hapA/${line}_GD1913_hapA.sam --rg-id ${line} --rg SM:${line} 2> bam_files_hapA/${line}_GD1913_hapA_mappingrate.txt
+samtools sort -@ 15 ./bam_files_hapA/${line}_GD1913_hapA.sam -o ./bam_files_hapA/${line}_GD1913_hapA_sorted.bam --reference genome/GD1913_hapA.fasta
+samtools index ./bam_files_hapA/${line}_GD1913_hapA_sorted.bam
+#hapB
+hisat2 -p 20 -x ./genome/GD1913_hapB_index -1 data/${line}_R1.fq.gz -2 data/${line}_R2.fq.gz -S bam_files_hapB/${line}_GD1913_hapB.sam --rg-id ${line} --rg SM:${line} 2> bam_files_hapB/${line}_GD1913_hapB_mappingrate.txt
+samtools sort -@ 15 ./bam_files_hapB/${line}_GD1913_hapB.sam -o ./bam_files_hapB/${line}_GD1913_hapB_sorted.bam --reference genome/GD1913_hapB.fasta
+samtools index bam_files_hapB/${line}_GD1913_hapB_sorted.bam
+done < sample_names.txt
+```
+- Generate stringtie expression files from each time-point sample
+```
+inputA=(./bam_files_hapA/*_GD1913_hapA.bam)
+for ((i=0;i<=${#inputA[@]};i++))
+do
+stringtie ${inputA[i]} -G ./genome/Puccinia_polysora_GD1913_hapA.gff3 -e -o ./expression/$(basename "${input[i]%_GD1913_hapA.bam}_hapA_expression") -p 10
+done
+inputB=(./bam_files_hapA/*_GD1913_hapB.bam)
+for ((i=0;i<=${#inputB[@]};i++))
+do
+stringtie ${inputB[i]} -G ./genome/Puccinia_polysora_GD1913_hapB.gff3 -e -o ./expression/$(basename "${input[i]%_GD1913_hapB.bam}_hapB_expression") -p 10
+done
+```
+- Generate count matrix
+```
+ls -l | grep "expression" | awk '{print $9"\t"$9}' | awk 'BEGIN{OFS="\t"}{gsub (/_hapA_expression/,"",$1); print $0}' > GFF_listA.txt
+prepDE.py -i GFF_listA.txt -g ./expression/GD1913_hapA_count_matrix_genes -t ./expression/GD1913_hapA_count_matrix_transcripts -l 150
+ls -l | grep "expression" | awk '{print $9"\t"$9}' | awk 'BEGIN{OFS="\t"}{gsub (/_hapB_expression/,"",$1); print $0}' > GFF_listB.txt
+prepDE.py -i GFF_listB.txt -g ./expression/GD1913_hapB_count_matrix_genes -t ./expression/GD1913_hapB_count_matrix_transcripts -l 150
+```
 
 ## Step 2 Plot clustering in R
 ```
