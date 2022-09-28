@@ -145,6 +145,7 @@ plotcluster(datA, clusA$cluster)
 plotcluster(datB, clusB$cluster)
 
 #obtain expression file with ordered cluster
+set.seed(1234567)
 kA <- kmeans(datA,7)
 m.kmeansA<- cbind(datA, kA$cluster) # combine the cluster with the matrix
 oA<- order(m.kmeansA[,22]) # order the last column
