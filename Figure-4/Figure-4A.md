@@ -1,14 +1,49 @@
 # The workflow to perform clustering analysis of gene expression of secretome 
-## Step 1 Generate count matrix of expression data
+## Step 1 Extract transcript sequences from genome sequence
+```
+gffread /PATH/TO/GD1913_hapA.gff3 -g /PATH/TO/GD1913_hapA.fasta -w transcriptsA.fa
+gffread /PATH/TO/GD1913_hapB.gff3 -g /PATH/TO/GD1913_hapB.fasta -w transcriptsB.fa
+# change format with each transcript per line 
+awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' transcriptsA.fa | awk '{if (NR%2==1) print substr($1,1,14); else print $0}' - > transcriptsA.fasta
+awk '!/^>/ { printf "%s", $0; n = "\n" } /^>/ { print n $0; n = "" } END { printf "%s", n }' transcriptsB.fa | awk '{if (NR%2==1) print substr($1,1,14); else print $0}' - > transcriptsB.fasta
+```
+## Step 2 Extract secreted protein (sp) from transcript
+```
+grep -f hapA_secreted_genename transcriptsA.fasta -a 1 | sed 's/--//g' | sed '/^$/d'| sed 's/FUN/FUNA/g'> sp.transcriptsA.fasta
+grep -f hapB_secreted_genename transcriptsB.fasta -a 1 | sed 's/--//g' | sed '/^$/d'| sed 's/FUN/FUNB/g'> sp.transcriptsB.fasta
+# merge sp sequences from two haplotypes
+cat sp.transcriptsA.fasta sp.transcriptsB.fasta > sp.transcriptsAB.fasta
+```
+## Step 3 Generate count matrix of expression data using Kallisto (allelic specific, better for dikaryotic species)
+- index secreted protein fasta 
+```
+kallisto index -i sp.hapAB sp.transcriptsAB.fasta
+```
+- write file names of timepoint to filenames_timecourse.txt, run a cycle. 
+```
+while read line
+do
+kallisto quant -i sp.hapAB -b 50 -t 20 -o hapAB/${line} /PATH/TO/Timecourse_transcriptomics/${line}\_R1.fq.gz /PATH/TO/Timecourse_transcriptomics/${line}\_R2.fq.gz
+awk '{print $4}' hapAB/${line}/abundance.tsv > ${line}_count
+done < filenames_timecourse.txt
+```
+- Merge the count column and generate matix of expression data
+- Extract the count matrix of secreted protein as input file for plotting
+```
+grep "FUNA" matrix | sed 's/FUNA/FUN/g'> GD1913_hapA_count_matrix_transcripts
+grep "FUNB" matrix | sed 's/FUNB/FUN/g'> GD1913_hapB_count_matrix_transcripts
+```
+## alternate method to finish step1-3
+
+If your species is haploid, you can also generate count matrix of expression data by HISAT2
+Generate count matrix of expression data
 - Index genome
 ```
 hisat2-build -f -p 20 ./genome/GD1913_hapA.fasta genome/GD1913_hapA_index
 hisat2-build -f -p 20 ./genome/GD1913_hapB.fasta genome/GD1913_hapB_index
 ```
 - Genome mapping
-
 write the names of RNA-seq data for each time-point in sample_name.txt, run a cycle as follows
-
 ```
 while read line
 do
@@ -43,7 +78,7 @@ ls -l | grep "expression" | awk '{print $9"\t"$9}' | awk 'BEGIN{OFS="\t"}{gsub (
 prepDE.py -i GFF_listB.txt -g ./expression/GD1913_hapB_count_matrix_genes -t ./expression/GD1913_hapB_count_matrix_transcripts -l 150
 ```
 
-## Step 2 Plot clustering in R
+## Step 4 Plot clustering in R
 ```
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
