@@ -47,7 +47,7 @@ data preparation
 ```
 windowmasker -checkdup true -mk_counts -in GD1913.clean.fasta -infmt fasta -out GD1913.count -sformat obinary
 ```
--clean genome by moving illegal charactoer and compress genome 
+-clean genome by moving illegal characters and compress genome 
 ```
 gunzip -c GD1913.fasta.masked.gz | /PATH/TO/HaploMerger2_20180603/bin/fanaPolishing.pl --legalizing --maskShortPortion=1 --noleand:qingN --removeShortSeq=1 > GD1913.cleaned.fasta
 ```
@@ -72,8 +72,8 @@ sh ./hm.batchA3.misjoin_processing
 If the program stops after few seconds, there are something wrong on your PATH
 There are two important prameter files (all_lastz.ctl and scoreMatrix.q) which control the behavior of alignment process. 
 The file scoreMatrix.q contains a nucleotide substitution score matrix which is used by both LASTZ and chainNet. Because differntt diploid genomes have different heterozygosity rates and GC bias, it is highly recommended to infer a score matrix specific for our own genome.
-We need to divide our genome into two parts. The part1.fa included the top few contigs which account for 5%-15% genome size and part2.fa includes all remaining contigs.
-If your genome size > 1G, recommend less than 10% genome cotings in partA
+We need to divide our genome into two parts. The part1.fa included the top few contigs which account for 5%-15% of genome size and part2.fa includes all remaining contigs.
+If your genome size > 1G, recommend less than 10% genome contigs in partA
 ```
 samtools faidix GD1913.cleaned.fasta
 seqkit sort --by-length --reverse GD1913.cleaned.fasta GD1913.cleaned.sorted.fasta
